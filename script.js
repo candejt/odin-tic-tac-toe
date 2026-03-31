@@ -1,5 +1,5 @@
 
-//board and marker. module
+//board, marker, wins, reset. module
 const gameBoard = (function (){
     let board=["","","","","","","","",""];
 
@@ -31,8 +31,10 @@ const gameBoard = (function (){
             }
         }
     };
-
-    return {getBoard, placeMarker, checkWin};
+    const resetBoard = ()=>{
+        board=["","","","","","","","",""];
+    }
+    return {getBoard, placeMarker, checkWin, resetBoard};
 
 })();
 
@@ -49,6 +51,7 @@ const player2 = Player("Player 2", "O");
 const gameController = (function(){
     const players =[player1, player2];
 
+    let gameOver = false;
     let activePlayer=players[0];
     const getActivePlayer=()=>activePlayer;
 
@@ -59,23 +62,75 @@ const gameController = (function(){
             activePlayer = players[0]
         }
     };
-
     const playRound = (index)=>{
-        if (gameBoard.getBoard()[index] !== "") return;
+        if (gameOver || gameBoard.getBoard()[index] !== "") return;
 
-        console.log(`Marking cell ${index} for ${getActivePlayer().name}`);
+        //console.log(`Marking cell ${index} for ${getActivePlayer().name}`);
         
         gameBoard.placeMarker(index, getActivePlayer().marker);
 
         if(gameBoard.checkWin()){
-            console.log(`GAME OVER! ${getActivePlayer().name} is the winner`);
-            return
+            gameOver = true;
+            //console.log(`GAME OVER! ${getActivePlayer().name} is the winner`);
+            return `Winner: ${getActivePlayer().name}`;
         }
 
         switchPlayerTurn();
     };
-    return {playRound, getActivePlayer}
-
+    const resetGame = ()=>{
+        gameBoard.resetBoard();
+        activePlayer = players[0];
+        gameOver = false;
+    };
+    return {playRound, getActivePlayer, resetGame}
 }) ();
+
+const displayController=(function(){
+    const gameContainer = document.querySelector(".game-container");
+    const statusDiv =  document.querySelector(".status");
+
+    const updateScreen = ()=>{
+        gameContainer.innerHTML="";
+
+        const board = gameBoard.getBoard();
+        const activePlayer = gameController.getActivePlayer();
+
+        statusDiv.textContent = `It's ${activePlayer.name}'s turn (${activePlayer.marker})`
+        statusDiv.style.color = "black"; 
+        statusDiv.style.fontWeight = "normal";
+
+        board.forEach((marker, index)=>{
+            const cellButton = document.createElement("button");
+            cellButton.classList.add("cell");
+            cellButton.dataset.index=index;
+            cellButton.textContent = marker;
+
+            cellButton.addEventListener('click', clickHandler);
+            gameContainer.appendChild(cellButton);
+        });
+    };
+    function clickHandler(e){
+        const selectedIndex = e.target.dataset.index;
+
+        const result = gameController.playRound(selectedIndex);
+
+        updateScreen();
+
+        //if there's a winner
+        if (result){                           
+            statusDiv.textContent = result;
+            statusDiv.style.color="green"
+        }
+    }
+    const resetBtn = document.querySelector("#reset-btn");
+
+    resetBtn.addEventListener("click", () => {
+        gameController.resetGame(); 
+        updateScreen();           
+    });
+
+    updateScreen();
+    return {updateScreen}
+}) ()
 
 

@@ -1,0 +1,16 @@
+.game-container {
+  display: grid;
+  grid-template-columns: repeat(3, 100px); /* 3 columnas de 100px */
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  font-size: 2.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border: 2px solid #333;
+}
