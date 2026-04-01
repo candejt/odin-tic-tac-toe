@@ -39,20 +39,26 @@ const gameBoard = (function (){
 })();
 
 //players. factory
-const Player=function(name, marker){
+const createPlayer=function(name, marker){
     return{name, marker}
 };
 
-const player1 = Player("Player 1", "X");
-const player2 = Player("Player 2", "O");
+const player1 = createPlayer("Player 1", "X");
+const player2 = createPlayer("Player 2", "O");
 
 
 //Controller. module
-const gameController = (function(){
-    const players =[player1, player2];
+const gameController = (()=>{
+    // const players =[player1, player2]; no personal names
+    let players=[];
+    let activePlayer;
+
+    const setPlayers = (p1, p2) =>{
+        players = [p1, p2];
+        activePlayer = players[0]
+    };
 
     let gameOver = false;
-    let activePlayer=players[0];
     const getActivePlayer=()=>activePlayer;
 
     const switchPlayerTurn=()=>{
@@ -75,6 +81,11 @@ const gameController = (function(){
             return `Winner: ${getActivePlayer().name}`;
         }
 
+        if(!gameBoard.getBoard().includes("")){
+            gameOver = true;
+            return "Tie!";
+        }
+        
         switchPlayerTurn();
     };
     const resetGame = ()=>{
@@ -82,7 +93,7 @@ const gameController = (function(){
         activePlayer = players[0];
         gameOver = false;
     };
-    return {playRound, getActivePlayer, resetGame}
+    return {playRound, getActivePlayer, resetGame, setPlayers}
 }) ();
 
 const displayController=(function(){
@@ -128,8 +139,20 @@ const displayController=(function(){
         gameController.resetGame(); 
         updateScreen();           
     });
+    const startBtn = document.querySelector("#start-btn")
 
-    updateScreen();
+    startBtn.addEventListener('click',()=>{
+        const name1 = document.querySelector('#p1-name').value;
+        const name2 = document.querySelector ('#p2-name').value;
+        
+        const player1= createPlayer(name1, "X");
+        const player2 = createPlayer(name2, "O");
+
+        gameController.setPlayers(player1, player2);
+        updateScreen();
+    })
+
+    
     return {updateScreen}
 }) ()
 
